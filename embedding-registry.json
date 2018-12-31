@@ -17,6 +17,14 @@
             "item": "word"
         },
         {
+            "name": "fasttext-finnish-paperspace",
+            "path": "/storage/fasttext/cc.fi.300.vec",
+            "type": "fasttext",
+            "format": "vec",
+            "lang": "en",
+            "item": "word"
+        },
+        {
             "name": "fasttext-crawl",
             "path": "/Users/aleksi/gitrepos/delft/crawl-300d-2M.vec",
             "type": "fasttext",
@@ -69,4 +77,3 @@
     ],
     "embedding-lmdb-path": "data/db"
 }
-

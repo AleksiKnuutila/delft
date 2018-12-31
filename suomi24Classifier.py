@@ -27,12 +27,13 @@ def train(embeddings_name, fold_count):
     # saving the model
     model.save()
 
-def train_and_eval(embeddings_name, fold_count):
+def train_and_eval(embeddings_name, training_data, fold_count):
     model = textClassification.Classifier('suomi24', "gru", list_classes=list_classes, max_epoch=1, fold_number=fold_count,
         use_roc_auc=True, embeddings_name=embeddings_name)
 
     print('loading train dataset...')
-    xtr, y = load_texts_and_classes_pandas("data/textClassification/suomi24/suomi24.csv")
+#    xtr, y = load_texts_and_classes_pandas("data/textClassification/suomi24/suomi24.csv")
+    xtr, y = load_texts_and_classes_pandas(training_data)
 
     # segment train and eval sets
     x_train, y_train, x_test, y_test = split_data_and_labels(xtr, y, 0.9)
@@ -77,18 +78,23 @@ if __name__ == "__main__":
 
     parser.add_argument("action")
     parser.add_argument("--fold-count", type=int, default=1)
+    parser.add_argument("--embeddings",default='fasttext-finnish', help="name of word embeddings")
+    parser.add_argument("--trainingdata", help="path to training data")
 
     args = parser.parse_args()
 
     action = args.action
     if action not in ('train', 'train_eval', 'classify', 'test'):
+        pdb.set_trace()
         print('action not specifed, must be one of [train,train_eval,test,classify]')
 
     # change bellow for the desired pre-trained word embeddings using their descriptions in the file
     # embedding-registry.json
     # be sure to use here the same name as in the registry ('glove-840B', 'fasttext-crawl', 'word2vec'),
     # and that the path in the registry to the embedding file is correct on your system
-    embeddings_name = "fasttext-finnish"
+    #embeddings_name = "fasttext-finnish"
+    embeddings_name = args.embeddings
+    training_data = args.trainingdata
 
     if action == 'train':
         if args.fold_count < 1:
@@ -108,7 +114,7 @@ if __name__ == "__main__":
         if args.fold_count < 1:
             raise ValueError("fold-count should be equal or more than 1")
 
-        y_test = train_and_eval(embeddings_name, args.fold_count)
+        y_test = train_and_eval(embeddings_name, training_data, args.fold_count)
 
     if action == 'classify':
         someTexts = ["Olen ollut suhteessa poikaystävä kanssa nyt vajaa vuoden. Olemme todella läheisiä ja olemme puhuneet kaikkea maan ja taivaan väliltä. En ole välimatkan takia nähnyt vielä kasvotusten hänen perheensä kanssa mutta olen jutellut hänen siskonsa kanssa ja olen tietoinen, että hänen perheensä ainakin tietää ette minä ja poikaystäväni olemme yhteyksissä (En tiedä tietävätkö suhteemme laadusta). Jokatapauksessa juttu on se, että poikaystäväni on sairas(Syöpä ja saa siihen hoitoa) ja hän on todella huonossa kunnossa sairaalassa ja päätin ilahduttaa kukilla. Kukat oli määrä toimittaa sairalaan missä hän on mutta tämä kyseinen kukkafirma soitti numeroon, jonka annoin ja poikaystäväni sisko tietysti vastasi (hän ei pysty puhumaan tällä hetkellä tilansa takia) ja sisko halusi mielummin hakea kukat läheiseltä asemalta kun saada kukat sairaalaan suoraan ja nyt jäin miettimään miksi näin olisi? ... Johtuuko siitä, että eivät halua vanhempien näkevän jonkun naisen lähettävän kukkia vai mikä on homman nimi?.... Ehkä tyhmää spekulaatiota mutta mietin mikä tässä voisi olla takana.....",
