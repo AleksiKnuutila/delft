@@ -4,15 +4,23 @@
             "name": "glove-840B",
             "path": "/home/lopez/embeddings/glove.840B.300d.txt",
             "type": "glove",
-            "format": "vec", 
+            "format": "vec",
+            "lang": "en",
+            "item": "word"
+        },
+        {
+            "name": "fasttext-finnish",
+            "path": "/Users/aleksi/gitrepos/delft/cc.fi.300.vec",
+            "type": "fasttext",
+            "format": "vec",
             "lang": "en",
             "item": "word"
         },
         {
             "name": "fasttext-crawl",
-            "path": "/home/lopez/embeddings/crawl-300d-2M.vec",
+            "path": "/Users/aleksi/gitrepos/delft/crawl-300d-2M.vec",
             "type": "fasttext",
-            "format": "vec", 
+            "format": "vec",
             "lang": "en",
             "item": "word"
         },
@@ -20,7 +28,7 @@
             "name": "fasttext-wiki",
             "path": "/home/lopez/embeddings/wiki.en.bin",
             "type": "fasttext",
-            "format": "bin", 
+            "format": "bin",
             "lang": "en",
             "item": "word"
         },
@@ -28,7 +36,7 @@
             "name": "word2vec",
             "path": "/home/lopez/embeddings/GoogleNews-vectors-negative300.vec",
             "type": "w2v",
-            "format": "vec", 
+            "format": "vec",
             "lang": "en",
             "item": "word"
         },
@@ -36,7 +44,7 @@
             "name": "wiki.fr",
             "path": "/home/lopez/embeddings/wiki.fr.vec",
             "type": "fasttext",
-            "format": "vec", 
+            "format": "vec",
             "lang": "fr",
             "item": "word"
         },
@@ -44,7 +52,7 @@
             "name": "cc.fr",
             "path": "/home/lopez/embeddings/cc.fr.300.vec",
             "type": "fasttext",
-            "format": "vec", 
+            "format": "vec",
             "lang": "fr",
             "item": "word"
         }
