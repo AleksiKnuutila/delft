@@ -1,4 +1,4 @@
-# Manage pre-trained embeddings 
+# Manage pre-trained embeddings
 
 from keras.preprocessing import text, sequence
 import numpy as np
@@ -35,7 +35,7 @@ from utilities.Tokenizer import tokenizeAndFilterSimple
 # this is the default init size of a lmdb database for embeddings
 # based on https://github.com/kermitt2/nerd/blob/master/src/main/java/com/scienceminer/nerd/kb/db/KBDatabase.java
 # and https://github.com/kermitt2/nerd/blob/0.0.3/src/main/java/com/scienceminer/nerd/kb/db/KBDatabaseFactory.java#L368
-map_size = 100 * 1024 * 1024 * 1024 
+map_size = 100 * 1024 * 1024 * 1024
 
 # dim of ELMo embeddings (2 times the dim of the LSTM for LM)
 ELMo_embed_size = 1024
@@ -71,14 +71,14 @@ class Embeddings(object):
                 # clean possible remaining cache
                 self.clean_ELMo_cache()
                 # create and load a cache in write mode, it will be used only for training
-                self.env_ELMo = lmdb.open(self.embedding_ELMo_cache, map_size=map_size)
+                self.env_ELMo = lmdb.open(self.embedding_ELMo_cache, map_size=map_size, lock=False)
 
     def __getattr__(self, name):
         return getattr(self.model, name)
 
     def _load_embedding_registry(self, path='./embedding-registry.json'):
         """
-        Load the description of available embeddings. Each description provides a name, 
+        Load the description of available embeddings. Each description provides a name,
         a file path (used only if necessary) and a embeddings type (to take into account
         small variation of format)
         """
@@ -178,7 +178,7 @@ class Embeddings(object):
                             vector = np.array([float(val) for val in line[1:len(line)-1]], dtype='float32')
                         else:
                             vector = np.array([float(val) for val in line[1:len(line)]], dtype='float32')
-                    
+
                         #vector = np.array([float(val) for val in line[1:len(line)]], dtype='float32')
                     except:
                         print(len(line))
@@ -188,8 +188,8 @@ class Embeddings(object):
                     if self.embed_size == 0:
                         self.embed_size = len(vector)
 
-                    if len(word.encode(encoding='UTF-8')) < self.env.max_key_size():   
-                        txn.put(word.encode(encoding='UTF-8'), _serialize_pickle(vector))  
+                    if len(word.encode(encoding='UTF-8')) < self.env.max_key_size():
+                        txn.put(word.encode(encoding='UTF-8'), _serialize_pickle(vector))
                         #txn.put(word.encode(encoding='UTF-8'), _serialize_byteio(vector))
                         i += 1
 
@@ -199,7 +199,7 @@ class Embeddings(object):
                         txn = self.env.begin(write=True)
 
             #if i % batch_size != 0:
-            txn.commit()   
+            txn.commit()
             if nbWords == 0:
                 nbWords = i
             self.vocab_size = nbWords
@@ -223,7 +223,7 @@ class Embeddings(object):
         elif self.embedding_lmdb_path is None or self.embedding_lmdb_path == "None":
             print("embedding_lmdb_path is not specified in the embeddings registry, so the embeddings will be loaded in memory...")
             self.make_embeddings_simple_in_memory(name, hasHeader)
-        else:    
+        else:
             # check if the lmdb database exists
             envFilePath = os.path.join(self.embedding_lmdb_path, name)
             if os.path.isdir(envFilePath):
@@ -232,7 +232,7 @@ class Embeddings(object):
                     self.lang = description["lang"]
 
                 # open the database in read mode
-                self.env = lmdb.open(envFilePath, readonly=True, max_readers=2048, max_spare_txns=4)
+                self.env = lmdb.open(envFilePath, readonly=True, max_readers=2048, max_spare_txns=4, lock=False)
                 # we need to set self.embed_size and self.vocab_size
                 with self.env.begin() as txn:
                     stats = txn.stat()
@@ -251,10 +251,10 @@ class Embeddings(object):
                 # mdb_txn_begin: MDB_BAD_RSLOT: Invalid reuse of reader locktable slot
                 # when opening new transaction !
                 self.env.close()
-                self.env = lmdb.open(envFilePath, readonly=True, max_readers=2048, max_spare_txns=2)
-            else: 
+                self.env = lmdb.open(envFilePath, readonly=True, max_readers=2048, max_spare_txns=2, lock=False)
+            else:
                 # create and load the database in write mode
-                self.env = lmdb.open(envFilePath, map_size=map_size)
+                self.env = lmdb.open(envFilePath, map_size=map_size, lock=False)
                 self.make_embeddings_lmdb(name, hasHeader)
 
     def make_ELMo(self):
@@ -280,7 +280,7 @@ class Embeddings(object):
             self.embeddings_op = self.bilm(self.character_ids)
 
             with tf.variable_scope('', reuse=tf.AUTO_REUSE):
-                # the reuse=True scope reuses weights from the whole context 
+                # the reuse=True scope reuses weights from the whole context
                 self.elmo_input = weight_layers('input', self.embeddings_op, l2_coef=0.0)
 
     def dump_ELMo_token_embeddings(self, x_train):
@@ -329,7 +329,7 @@ class Embeddings(object):
             self.embeddings_op_token_dump = self.bilm_token_dump(self.token_ids)
             """
             with tf.variable_scope('', reuse=tf.AUTO_REUSE):
-                # the reuse=True scope reuses weights from the whole context 
+                # the reuse=True scope reuses weights from the whole context
                 self.elmo_input_token_dump = weight_layers('input', self.embeddings_op_token_dump, l2_coef=0.0)
             """
             print("ELMo token dump completed")
@@ -372,7 +372,7 @@ class Embeddings(object):
 
     def get_sentence_vector_with_ELMo(self, token_list):
         """
-            Return a concatenation of standard embeddings (e.g. Glove) and ELMo embeddings 
+            Return a concatenation of standard embeddings (e.g. Glove) and ELMo embeddings
             for a full sentence
         """
         if not self.use_ELMo:
@@ -424,16 +424,16 @@ class Embeddings(object):
                     k += 1
                 k = 1
                 j += 1
-            j = 1 
+            j = 1
             i += 1
         '''
 
         #elmo_result = np.zeros((len(token_list), max_size_sentence-2, ELMo_embed_size), dtype='float32')
         #elmo_result = np.random.rand(len(token_list), max_size_sentence-2, ELMo_embed_size)
         # check lmdb cache
-        
-        
-        elmo_result = self.get_ELMo_lmdb_vector(token_list, max_size_sentence) 
+
+
+        elmo_result = self.get_ELMo_lmdb_vector(token_list, max_size_sentence)
         if elmo_result is None:
             with tf.Session() as sess:
                 # weird, for this cpu is faster than gpu (1080Ti !)
@@ -452,7 +452,7 @@ class Embeddings(object):
                     )
                     #cache computation
                     self.cache_ELMo_lmdb_vector(token_list, elmo_result)
-        
+
         concatenated_result = np.zeros((len(token_list), max_size_sentence-2, self.embed_size), dtype=np.float32)
         #concatenated_result = np.random.rand(elmo_result.shape[0], max_size_sentence-2, self.embed_size)
         for i in range(0, len(token_list)):
@@ -471,7 +471,7 @@ class Embeddings(object):
             return
 
         with tf.variable_scope('', reuse=tf.AUTO_REUSE):
-            # the reuse=True scope reuses weights from the whole context 
+            # the reuse=True scope reuses weights from the whole context
             self.elmo_input_token_dump = weight_layers('input', self.embeddings_op_token_dump, l2_coef=0.0)
 
         # Create batches of data
@@ -483,7 +483,7 @@ class Embeddings(object):
                 # It is necessary to initialize variables once before running inference
                 sess.run(tf.global_variables_initializer())
 
-                # Compute ELMo representations 
+                # Compute ELMo representations
                 elmo_result = sess.run(
                     self.elmo_input_token_dump['weighted_op'],
                     feed_dict={self.token_ids: local_token_ids}
@@ -509,9 +509,9 @@ class Embeddings(object):
         if self.env is None or self.extension == 'bin':
             # db not available or embeddings in bin format, the embeddings should be available in memory (normally!)
             return self.get_word_vector_in_memory(word)
-        try:    
+        try:
             with self.env.begin() as txn:
-                txn = self.env.begin()   
+                txn = self.env.begin()
                 vector = txn.get(word.encode(encoding='UTF-8'))
                 if vector:
                     word_vector = _deserialize_pickle(vector)
@@ -538,7 +538,7 @@ class Embeddings(object):
         if self.env_ELMo is None:
             # db cache not available, we don't cache ELMo stuff
             return None
-        try:    
+        try:
             ELMo_vector = np.zeros((len(token_list), max_size_sentence-2, ELMo_embed_size), dtype='float32')
             with self.env_ELMo.begin() as txn:
                 for i in range(0, len(token_list)):
@@ -573,7 +573,7 @@ class Embeddings(object):
 
     def cache_ELMo_lmdb_vector(self, token_list, ELMo_vector):
         """
-            Cache in LMDB the ELMo embeddings for a given sequence 
+            Cache in LMDB the ELMo embeddings for a given sequence
         """
         if self.env_ELMo is None:
             # db cache not available, we don't cache ELMo stuff
@@ -582,7 +582,7 @@ class Embeddings(object):
         for i in range(0, len(token_list)):
             # get a hash for the token_list
             the_hash = list_digest(token_list[i])
-            txn.put(the_hash.encode(encoding='UTF-8'), _serialize_pickle(ELMo_vector[i]))  
+            txn.put(the_hash.encode(encoding='UTF-8'), _serialize_pickle(ELMo_vector[i]))
         txn.commit()
 
     def clean_ELMo_cache(self):
@@ -592,9 +592,9 @@ class Embeddings(object):
         if self.env_ELMo is None:
             # db cache not available, nothing to clean
             return
-        else: 
+        else:
             self.env.close()
-            for file in os.listdir(self.embedding_ELMo_cache): 
+            for file in os.listdir(self.embedding_ELMo_cache):
                 file_path = os.path.join(self.embedding_ELMo_cache, file)
                 if os.path.isfile(file_path):
                     os.remove(file_path)
@@ -656,7 +656,7 @@ def list_digest(strings):
 
 
 def is_int(s):
-    try: 
+    try:
         int(s)
         return True
     except ValueError:
